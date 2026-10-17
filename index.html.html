@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Transformer Guardian</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&display=swap">
+<style>
+:root{--bg:#0f1a22;--panel:#16252f;--line:#26394618;--ink:#dbe7ee;--mute:#8aa0ad;--ok:#4fd1b5;--warn:#f2b84b;--bad:#ff5a4f;--cu:#c9803f;--steel:#5d6f7c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#eef3f6;--panel:#fff;--ink:#14232d;--mute:#5b6f7b;--steel:#8fa2ad}}
+:root[data-theme="dark"]{--bg:#0f1a22}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.45 Sora,system-ui,sans-serif;font-variant-numeric:tabular-nums}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:16px 18px}
+h1{font-size:20px;margin:0;font-weight:700;letter-spacing:.2px}h1 small{display:block;font-weight:300;color:var(--mute);font-size:12px}
+.bar{display:flex;gap:8px;flex-wrap:wrap}
+button,select{background:var(--panel);color:var(--ink);border:1px solid var(--steel);border-radius:8px;padding:8px 12px;font:inherit;cursor:pointer}
+button:hover{border-color:var(--cu)}button:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--cu);outline-offset:2px}
+button.on{background:var(--cu);color:#111;border-color:var(--cu)}
+#banner{margin:0 18px;padding:10px 14px;border-radius:10px;font-weight:600;background:#4fd1b522;color:var(--ok);transition:.3s}
+#banner.s1{background:#f2b84b22;color:var(--warn)}#banner.s2{background:#ff5a4f26;color:var(--bad);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.6}}
+main{display:grid;gap:14px;padding:14px 18px 28px;grid-template-columns:repeat(12,1fr)}
+.card{background:var(--panel);border-radius:14px;padding:14px;min-width:0}
+.card h2{margin:0 0 8px;font-size:13px;font-weight:600;color:var(--mute)}
+#twinC{grid-column:span 5}#healthC{grid-column:span 7}.m{grid-column:span 3}#chartC{grid-column:span 8}#logC{grid-column:span 4}#ctlC{grid-column:span 12}
+@media(max-width:900px){#twinC,#healthC,#chartC,#logC{grid-column:span 12}.m{grid-column:span 6}}
+svg text{fill:var(--mute);font-size:10px}
+#flux{stroke-dasharray:8 10;animation:flow 2s linear infinite}@keyframes flow{to{stroke-dashoffset:-72}}
+.coil{transition:fill .4s}
+@media(prefers-reduced-motion:reduce){#flux,#banner.s2{animation:none}}
+.health{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+.ring{position:relative;width:150px;height:150px;flex:none}.ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:34px;font-weight:700}
+.ring i{position:absolute;left:0;right:0;bottom:30px;text-align:center;font-style:normal;font-size:10px;color:var(--mute)}
+.prob{flex:1;min-width:200px}.prob div{margin:7px 0}.prob span{display:flex;justify-content:space-between;font-size:12px}
+.track{height:8px;border-radius:5px;background:#8aa0ad33;overflow:hidden}.track u{display:block;height:100%;width:0;transition:width .4s;background:var(--ok)}
+#ttc{font-size:22px;font-weight:700}
+.val{font-size:28px;font-weight:700}.val small{font-size:12px;color:var(--mute);font-weight:400}
+canvas{width:100%;display:block}
+#log{max-height:230px;overflow:auto;margin:0;padding:0;list-style:none;font-size:12px}#log li{padding:5px 0;border-bottom:1px solid #8aa0ad22}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+label{color:var(--mute);font-size:12px}input[type=number]{width:70px;background:var(--bg);color:var(--ink);border:1px solid var(--steel);border-radius:6px;padding:5px}
+textarea{width:100%;height:80px;background:var(--bg);color:var(--ink);border:1px solid var(--steel);border-radius:8px;padding:8px;font:12px monospace}
+details{margin-top:8px}code{background:#8aa0ad22;padding:1px 5px;border-radius:4px}
+</style></head><body>
+<header>
+<h1>Transformer Guardian<small>Predicts trouble before it happens: live digital twin, AI risk classifier, time to critical</small></h1>
+<div class="bar">
+<select id="src" aria-label="Data source"><option value="sim">Simulator</option><option value="serial">ESP32 over USB (Web Serial)</option><option value="http">HTTP JSON URL</option></select>
+<select id="spd" aria-label="Simulation speed"><option value="1">1× time</option><option value="5" selected>5× time</option><option value="20">20× time</option></select>
+<button id="conn">Start</button>
+</div></header>
+<div id="banner">Waiting for data</div>
+<main>
+<section class="card" id="twinC"><h2>Digital twin</h2>
+<svg viewBox="0 0 320 250" width="100%" role="img" aria-label="Transformer digital twin">
+<defs><pattern id="wind" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#0003"/><rect width="6" height="3" fill="#fff2"/></pattern>
+<filter id="gl"><feGaussianBlur stdDeviation="5"/></filter></defs>
+<rect x="50" y="40" width="220" height="170" rx="8" fill="none" stroke="var(--steel)" stroke-width="16"/>
+<path id="flux" d="M82 72H238V178H82Z" fill="none" stroke="#f2b84b" stroke-width="2.5" opacity=".8"/>
+<rect id="g1" x="44" y="68" width="42" height="114" rx="6" filter="url(#gl)" opacity=".7"/>
+<rect id="g2" x="234" y="68" width="42" height="114" rx="6" filter="url(#gl)" opacity=".7"/>
+<rect id="c1" class="coil" x="44" y="68" width="42" height="114" rx="6"/><rect x="44" y="68" width="42" height="114" rx="6" fill="url(#wind)"/>
+<rect id="c2" class="coil" x="234" y="68" width="42" height="114" rx="6"/><rect x="234" y="68" width="42" height="114" rx="6" fill="url(#wind)"/>
+<text x="65" y="232" text-anchor="middle">Primary</text><text x="255" y="232" text-anchor="middle">Secondary</text>
+<text x="160" y="128" text-anchor="middle" style="font-size:11px">magnetic flux</text>
+<text id="tw" x="160" y="150" text-anchor="middle" style="font-size:22px;font-weight:700;fill:var(--ink)">--</text>
+<text x="65" y="26" text-anchor="middle" id="tv">-- V</text><text x="255" y="26" text-anchor="middle" id="ti">-- A</text>
+</svg></section>
+<section class="card" id="healthC"><h2>Health and AI verdict</h2>
+<div class="health"><div class="ring"><svg viewBox="0 0 120 120" width="150" height="150"><circle cx="60" cy="60" r="52" fill="none" stroke="#8aa0ad33" stroke-width="10"/><circle id="arc" cx="60" cy="60" r="52" fill="none" stroke="var(--ok)" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 327" transform="rotate(-90 60 60)" style="transition:.5s"/></svg><b id="hs">--</b><i>health</i></div>
+<div class="prob"><div style="font-size:12px;color:var(--mute)">Predicted time to critical temperature</div><div id="ttc">--</div>
+<div><span><em>Healthy</em><em id="p0">0%</em></span><div class="track"><u id="b0"></u></div></div>
+<div><span><em>Overloaded</em><em id="p1">0%</em></span><div class="track"><u id="b1" style="background:var(--warn)"></u></div></div>
+<div><span><em>At risk of failure</em><em id="p2">0%</em></span><div class="track"><u id="b2" style="background:var(--bad)"></u></div></div>
+<div id="why" style="font-size:12px;color:var(--mute)"></div></div></div></section>
+<section class="card m"><h2>Winding temperature</h2><div class="val"><span id="vT">--</span><small> °C</small></div><div style="font-size:12px;color:var(--mute)" id="vS">-- °C/min</div></section>
+<section class="card m"><h2>Load current</h2><div class="val"><span id="vI">--</span><small> A</small></div><canvas id="spI" height="40"></canvas></section>
+<section class="card m"><h2>Load</h2><div class="val"><span id="vL">--</span><small> % of rated</small></div><div class="track" style="margin-top:10px"><u id="lb"></u></div></section>
+<section class="card m"><h2>Supply voltage</h2><div class="val"><span id="vV">--</span><small> V</small></div><canvas id="spV" height="40"></canvas></section>
+<section class="card" id="chartC"><h2>Temperature and forecast (dotted line is where it is heading)</h2><canvas id="ch" height="230"></canvas></section>
+<section class="card" id="logC"><h2>Event log</h2><ul id="log"></ul></section>
+<section class="card" id="ctlC"><h2>Test bench</h2>
+<div class="ctl"><label>Simulate fault:</label><button data-sc="normal" class="on">Normal</button><button data-sc="over">Overload</button><button data-sc="cool">Cooling failure</button><button data-sc="surge">Voltage surge</button><button data-sc="idle">Idle</button></div>
+<div class="ctl"><label>Rated current <input id="rI" type="number" value="5" step=".1"></label><label>Nominal V <input id="nV" type="number" value="230"></label><label>Warn °C <input id="wT" type="number" value="70"></label><label>Critical °C <input id="cT" type="number" value="90"></label></div>
+<div class="ctl"><label>Record training data as</label><select id="lab"><option value="normal">normal</option><option value="overloaded">overloaded</option><option value="at_risk">at_risk</option></select><button id="rec">Record</button><span id="rc" style="color:var(--mute)">0 rows</span><button id="exp">Export dataset CSV</button><button id="expL">Export event log</button></div>
+<details><summary>Plug in your own trained model</summary><p style="color:var(--mute);font-size:12px">Train softmax or logistic regression in scikit-learn on the exported CSV, then paste <code>{"w":[[…4],[…4],[…4]],"b":[…3]}</code> with class order healthy, overloaded, at_risk and feature order load (0 to 1.3), temp °C, slope °C/min, voltage deviation (0 to 1). Until you load one, a starter model runs.</p><textarea id="mj"></textarea><button id="lm">Load model</button></details>
+<details><summary>ESP32 data format</summary><p style="color:var(--mute);font-size:12px">Send one line per reading at 115200 baud: <code>{"t":45.2,"i":1.8,"v":229}</code> or <code>45.2,1.8,229</code> (°C, A, V). For HTTP mode the URL must return that JSON and allow CORS. Chrome or Edge is needed for USB. When using the hosted page, save it and open it as a local file if USB or HTTP is blocked.</p></details>
+</section></main>
+<script>
+const $=id=>document.getElementById(id),clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const S={rI:5,nV:230,warn:70,crit:90};
+let M={w:[[-4,-.04,-.4,-20],[7,.01,.1,5],[1,.1,.6,15]],b:[7,-6,-7]};
+let D=[],events=[],ds=[],recOn=false,src='sim',timer=null,simT=0,lastState=-1,beepOK=false;
+const SC={normal:{l:.5,c:1,v:230},over:{l:1.25,c:1,v:229},cool:{l:.8,c:1.9,v:230},surge:{l:.6,c:1,v:262},idle:{l:.05,c:1,v:230}};
+let sc=SC.normal,sim={T:30,l:.5};
+const NAMES=['Healthy','Overloaded','At risk'];
+function cfg(){S.rI=+$('rI').value||5;S.nV=+$('nV').value||230;S.warn=+$('wT').value;S.crit=+$('cT').value}
+document.querySelectorAll('[data-sc]').forEach(b=>b.onclick=()=>{sc=SC[b.dataset.sc];document.querySelectorAll('[data-sc]').forEach(x=>x.classList.toggle('on',x===b));log('Scenario: '+b.textContent)});
+function log(m){const t=new Date().toLocaleTimeString();events.push([t,m]);const li=document.createElement('li');li.textContent=t+'  '+m;$('log').prepend(li)}
+function push(T,I,V,t){cfg();D.push({t:t??Date.now()/1000,T,I,V});if(D.length>1500)D.shift();analyze()}
+function slope(){const n=D.length,e=D[n-1].t;let p=D.filter(d=>e-d.t<=120);if(p.length<4)return 0;
+ const mt=p.reduce((a,d)=>a+d.t,0)/p.length,mT=p.reduce((a,d)=>a+d.T,0)/p.length;let nu=0,de=0;p.forEach(d=>{nu+=(d.t-mt)*(d.T-mT);de+=(d.t-mt)**2});return de?nu/de:0}
+function analyze(){const d=D[D.length-1],load=d.I/S.rI,sl=slope()*60,vd=Math.abs(d.V-S.nV)/S.nV;
+ const f=[load,d.T,sl,vd],z=M.w.map((w,i)=>w.reduce((a,x,j)=>a+x*f[j],M.b[i])),mx=Math.max(...z),e=z.map(x=>Math.exp(x-mx)),s=e.reduce((a,b)=>a+b),p=e.map(x=>x/s);
+ let st=p.indexOf(Math.max(...p)),rule=false;if(d.T>=S.crit&&st!==2){st=2;rule=true}
+ const pen=clamp((d.T-S.warn)/(S.crit-S.warn),0,1.2)*40+clamp((load-.8)/.4,0,1)*25+clamp((vd-.05)/.07,0,1)*15+clamp(sl/6,0,1)*10+p[2]*10,h=Math.round(clamp(100-pen,0,100));
+ const sps=slope();let ttc='Stable';if(d.T>=S.crit)ttc='Already critical';else if(sps>0.004){const s2=(S.crit-d.T)/sps;ttc=s2>7200?'More than 2 h':Math.floor(s2/60)+' min '+Math.round(s2%60)+' s'}
+ $('vT').textContent=d.T.toFixed(1);$('vS').textContent=(sl>=0?'+':'')+sl.toFixed(2)+' °C/min';$('vI').textContent=d.I.toFixed(2);$('vL').textContent=Math.round(load*100);$('lb').style.width=clamp(load*77,0,100)+'%';$('lb').style.background=load>1?'var(--bad)':load>.8?'var(--warn)':'var(--ok)';$('vV').textContent=d.V.toFixed(0);
+ $('tw').textContent=d.T.toFixed(0)+' °C';$('tv').textContent=d.V.toFixed(0)+' V';$('ti').textContent=d.I.toFixed(1)+' A';
+ const hue=clamp(190-(d.T-30)/(S.crit-30+10)*190,0,190),col=`hsl(${hue} 85% 52%)`;['c1','c2','g1','g2'].forEach(i=>$(i).style.fill=col);
+ $('flux').style.animationDuration=clamp(3.2-load*2,.5,3.2)+'s';$('flux').style.strokeWidth=1.5+load*2;
+ $('arc').setAttribute('stroke-dasharray',h/100*327+' 327');$('arc').style.stroke=h>70?'var(--ok)':h>40?'var(--warn)':'var(--bad)';$('hs').textContent=h;$('ttc').textContent=ttc;
+ p.forEach((x,i)=>{$('p'+i).textContent=Math.round(x*100)+'%';$('b'+i).style.width=x*100+'%'});
+ const why=[];if(load>.9)why.push('load '+Math.round(load*100)+'%');if(sl>1)why.push('heating '+sl.toFixed(1)+' °C/min');if(vd>.05)why.push('voltage off by '+(vd*100).toFixed(0)+'%');if(d.T>S.warn)why.push('above warning temperature');
+ $('why').textContent=(rule?'Safety rule override. ':'')+(why.length?'Driving this: '+why.join(', '):'All readings inside normal range');
+ const lv=st===0?0:st===1?1:2,b=$('banner');b.className=lv?'s'+lv:'';b.textContent=NAMES[st]+(st===2?' – act now: reduce load and check cooling':st===1?' – reduce the load':' – operating normally');
+ if(st!==lastState){if(lastState>=0)log('State changed to '+NAMES[st]+' at '+d.T.toFixed(1)+' °C, load '+Math.round(load*100)+'%');if(st===2)beep();lastState=st}
+ if(recOn){ds.push([d.t.toFixed(1),d.T.toFixed(2),d.I.toFixed(3),d.V.toFixed(1),load.toFixed(3),sl.toFixed(3),$('lab').value]);$('rc').textContent=ds.length+' rows'}
+ draw(sps)}
+function spark(c,key,col){const x=c.getContext('2d'),w=c.width=c.clientWidth*2,h=c.height=80,a=D.slice(-120).map(d=>d[key]);if(a.length<2)return;const lo=Math.min(...a),hi=Math.max(...a)||1,r=hi-lo||1;x.strokeStyle=col;x.lineWidth=3;x.beginPath();a.forEach((v,i)=>{const X=i/(a.length-1)*w,Y=h-6-(v-lo)/r*(h-12);i?x.lineTo(X,Y):x.moveTo(X,Y)});x.stroke()}
+function draw(sps){spark($('spI'),'I','#c9803f');spark($('spV'),'V','#4fd1b5');
+ const c=$('ch'),x=c.getContext('2d'),w=c.width=c.clientWidth*2,h=c.height=460,e=D[D.length-1].t,past=300,fut=180,tx=t=>(t-(e-past))/(past+fut)*w;
+ const vis=D.filter(d=>e-d.t<=past),top=Math.max(S.crit+15,...vis.map(d=>d.T)+0),lo=20,ty=T=>h-20-(T-lo)/(Math.max(top,S.crit+15)-lo)*(h-40);
+ x.clearRect(0,0,w,h);x.font='20px Sora';x.lineWidth=2;
+ [[S.warn,'#f2b84b','warning'],[S.crit,'#ff5a4f','critical']].forEach(([T,c2,n])=>{x.strokeStyle=c2;x.setLineDash([10,8]);x.beginPath();x.moveTo(0,ty(T));x.lineTo(w,ty(T));x.stroke();x.fillStyle=c2;x.fillText(n+' '+T+' °C',8,ty(T)-6)});
+ x.setLineDash([]);x.strokeStyle='#c9803f';x.lineWidth=4;x.beginPath();vis.forEach((d,i)=>i?x.lineTo(tx(d.t),ty(d.T)):x.moveTo(tx(d.t),ty(d.T)));x.stroke();
+ const L=D[D.length-1];x.setLineDash([4,10]);x.strokeStyle='#8aa0ad';x.beginPath();x.moveTo(tx(L.t),ty(L.T));const T2=L.T+sps*fut;x.lineTo(tx(L.t+fut),ty(clamp(T2,lo,top+30)));x.stroke();x.setLineDash([]);
+ x.fillStyle='#8aa0ad';x.fillText('now',tx(L.t)-18,h-2)}
+function beep(){try{const a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.frequency.value=880;g.gain.value=.08;o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+.25)}catch(e){}}
+function simTick(){const k=+$('spd').value,dt=k*.25;cfg();simT+=dt;sim.l+=(sc.l-sim.l)*Math.min(1,dt/12);
+ const Tss=28+45*sim.l**2*sc.c*(S.crit>0?1:1);sim.T+=(Tss-sim.T)*dt/120+(Math.random()-.5)*.08;
+ push(sim.T,sim.l*S.rI+(Math.random()-.5)*.04,sc.v+(Math.random()-.5)*1.5,1e6+simT)}
+function parse(s){s=s.trim();if(!s)return;let t,i,v;try{const o=JSON.parse(s);t=o.t;i=o.i;v=o.v}catch(e){const p=s.split(',').map(Number);[t,i,v]=p}
+ if([t,i,v].every(Number.isFinite))push(t,i,v)}
+async function serial(){const port=await navigator.serial.requestPort();await port.open({baudRate:115200});const dec=new TextDecoderStream();port.readable.pipeTo(dec.writable);const r=dec.readable.getReader();let buf='';
+ while(true){const{value,done}=await r.read();if(done)break;buf+=value;let n;while((n=buf.indexOf('\n'))>=0){parse(buf.slice(0,n));buf=buf.slice(n+1)}}}
+let httpURL='';
+$('conn').onclick=async()=>{clearInterval(timer);src=$('src').value;D=[];lastState=-1;
+ try{if(src==='sim'){sim={T:30,l:.5};timer=setInterval(simTick,250);log('Simulator started')}
+ else if(src==='serial'){log('Connecting to ESP32…');await serial()}
+ else{httpURL=prompt('URL that returns {"t":..,"i":..,"v":..}');if(httpURL)timer=setInterval(()=>fetch(httpURL).then(r=>r.json()).then(o=>push(o.t,o.i,o.v)).catch(()=>{}),1000)}}
+ catch(e){log('Connection failed: '+e.message)}};
+$('rec').onclick=()=>{recOn=!recOn;$('rec').classList.toggle('on',recOn);$('rec').textContent=recOn?'Stop recording':'Record';log(recOn?'Recording as '+$('lab').value:'Recording stopped')};
+function dl(name,rows){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'}));a.download=name;a.click()}
+$('exp').onclick=()=>dl('transformer_dataset.csv',[['time_s','temp_c','current_a','voltage_v','load_frac','slope_c_per_min','label'],...ds]);
+$('expL').onclick=()=>dl('transformer_events.csv',[['time','event'],...events]);
+$('lm').onclick=()=>{try{const m=JSON.parse($('mj').value);if(m.w.length===3&&m.b.length===3&&m.w.every(r=>r.length===4)){M=m;log('Custom AI model loaded')}else throw 0}catch(e){log('Model JSON invalid: need w as 3×4 and b as 3 numbers')}};
+$('conn').click();
+</script></body></html>
